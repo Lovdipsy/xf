@@ -140,7 +140,7 @@ input[type="text"] {
 function validateCaptcha() {
     var userInput = document.getElementById("verify").value;
     if (userInput === window.generatedCaptcha) {
-        window.location.href = '证书信息.jpg'; 
+        window.location.href = '证书信息.jpg';
         // 执行其他成功逻辑
     } else {
         alert("验证码错误，请重试。");
