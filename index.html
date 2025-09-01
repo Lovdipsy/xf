@@ -28,6 +28,7 @@
         .title {
             font-size: 24px;
             margin-bottom: 40px;
+ font-weight: 300;
         }
 
         /* 输入框容器样式 */
@@ -38,15 +39,20 @@
         }
  /* 初始文本框样式 */
 input[type="text"] {
-            border: 2px solid gray; /* 初始边框颜色为灰色 */
+            border: 1px solid #d3d3d3; /* 初始边框颜色为灰色 */
             padding: 5px;
 	font-size: 16px;
             width: 200px;
+height: 28px;
+
         }
 /* 当文本框获得焦点时，改变边框颜色为黄色 */
         input[type="text"]:focus {
-            border-color: #b8860b;
+            border-color: #FFA500;
             outline: none; /* 移除默认的焦点轮廓 */
+border-radius: 4px; /* 圆角半径 */
+   	 box-shadow: 0 0 0 2px rgba(255, 165, 0, 0.2);
+
         }
 
         /* 验证码样式 */
@@ -55,8 +61,10 @@ input[type="text"] {
 		height: 28px;
 		cursor: pointer;
 		vertical-align: top;
-		border: 2px solid #4b0080;
+		border: 1px solid #4285f4;
 	}
+
+
 
         /* 确认按钮样式 */
         .confirm-button {
@@ -81,7 +89,7 @@ input[type="text"] {
 	<input type="text" class="topAlign" id="verify" name="verify" required placeholder="验证码">
 
 
-	<canvas width="100" height="50" id="verifyCanvas"></canvas>
+	<canvas width="100" height="40" id="verifyCanvas"></canvas>
 	<img id="code_img">
 </center>
 
@@ -99,36 +107,70 @@ input[type="text"] {
     function drawCode() {
     var canvas = document.getElementById("verifyCanvas");
     var context = canvas.getContext("2d");
+    
+    // 高清屏适配
+    var dpr = window.devicePixelRatio || 1;
+    var rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    context.scale(dpr, dpr);
+
     context.fillStyle = "white";
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillRect(0, 0, rect.width, rect.height);
     context.fillStyle = "#002fa7";
-    context.font = "30px Segoe Print";
+    
+    // 使用通用字体栈
+    context.font = "30px 'Segoe Print', 'Comic Sans MS', cursive, sans-serif";
     
     var rand = [];
     var characters = "abcdefghijklmnopqrstuvwxyz";
     for (var i = 0; i < 4; i++) {
         rand[i] = characters.charAt(Math.floor(Math.random() * characters.length));
     }
-     var generatedCaptcha = rand.join(''); // 保存生成的验证码副本
-    // 固定字符位置
-    var xPositions = [12, 35, 55, 75]; // 例如，每个字符间隔20px
-    var yPosition = [33, 30, 25, 29]; // 所有字符在同一水平线上
+    var generatedCaptcha = rand.join('');
+    
+    // 字符位置调整
+    var xPositions = [12, 35, 55, 75];
+    var yPosition = [33, 30, 25, 29];
     
     for (var i = 0; i < 4; i++) {
         context.fillText(rand[i], xPositions[i], yPosition[i]);
     }
-    window.generatedCaptcha = generatedCaptcha; // 将验证码副本存储在全局变量中
+    
+    window.generatedCaptcha = generatedCaptcha;
     convertCanvasToImage(canvas);
 }
-
-    // 绘制图片
-    function convertCanvasToImage(canvas) {
-        document.getElementById("verifyCanvas").style.display = "none";
-        var image = document.getElementById("code_img");
-        image.src = canvas.toDataURL("image/png");
-        return image;
-    }
-
+function convertCanvasToImage(canvas) {
+    // 获取原始Canvas尺寸
+    var originalWidth = canvas.width;
+    var originalHeight = canvas.height;
+    
+    // 创建新Canvas用于尺寸适配
+    var tempCanvas = document.createElement('canvas');
+    var tempCtx = tempCanvas.getContext('2d');
+    
+    // 设置新Canvas尺寸为物理像素尺寸
+    tempCanvas.width = originalWidth;
+    tempCanvas.height = originalHeight;
+    
+    // 绘制内容到新Canvas
+    tempCtx.drawImage(canvas, 0, 0);
+    
+    // 隐藏原始Canvas
+    document.getElementById("verifyCanvas").style.display = "none";
+    
+    // 获取目标图片元素
+    var image = document.getElementById("code_img");
+    
+    // 设置图片尺寸为逻辑像素尺寸
+    image.style.width = (originalWidth / (window.devicePixelRatio || 1)) + 'px';
+    image.style.height = (originalHeight / (window.devicePixelRatio || 1)) + 'px';
+    
+    // 转换并设置图片源
+    image.src = tempCanvas.toDataURL("image/png");
+    
+    return image;
+}
     // 点击图片刷新
     document.getElementById('code_img').onclick = function () {
         $('#verifyCanvas').remove();
